@@ -36,21 +36,35 @@ public class HumanPoseRecorder : MonoBehaviour {
   private IEnumerator RecordRoutine()
   {
     Debug.Log("Started recording ...");
+    yield return new WaitForEndOfFrame();
 
-    List<HumanPose> poses = new List<HumanPose>();
+    float t0 = -1.0f;
+    var poses = new Dictionary<float,HumanPose>();
     while (m_Recording)
     {
+      float tn = Time.time;
+
+      // Capture the start time.
+      if (t0 < 0) t0 = tn;
+
+      // Pose time stored relative to first pose.
+      tn = tn - t0;
+      
       HumanPose pose = new HumanPose();
       m_SourcePoseHandler.GetHumanPose(ref pose);
-      poses.Add(pose);
+
+      poses.Add(tn, pose);
+
       yield return new WaitForEndOfFrame();
     }
 
     Debug.Log("Stopped recording, writing to file ...");
-    List<ElementaryHumanPose> eposes = new List<ElementaryHumanPose>();
-    foreach (var pose in poses)
+    var eposes = new Dictionary<float, ElementaryHumanPose>();
+    foreach (var time_pose in poses)
     {
-      eposes.Add(new ElementaryHumanPose
+      var time = time_pose.Key;
+      var pose = time_pose.Value;
+      eposes.Add(time, new ElementaryHumanPose
       {
         px = pose.bodyPosition.x,
         py = pose.bodyPosition.y,

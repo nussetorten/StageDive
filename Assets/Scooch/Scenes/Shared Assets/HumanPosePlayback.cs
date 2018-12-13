@@ -28,13 +28,13 @@ public class HumanPosePlayback : MonoBehaviour {
 
     using (var file = new System.IO.StreamReader(System.IO.Path.Combine(Application.dataPath, "recording.hpl")))
     {
-      var eposes = JsonConvert.DeserializeObject<List<ElementaryHumanPose>>(file.ReadToEnd());
+      var eposes = JsonConvert.DeserializeObject<Dictionary<float, ElementaryHumanPose>>(file.ReadToEnd());
 
-      float t = 0.0f;
-      float dt = 0.1f; // 10Hz for prototyping only
-
-      foreach (var ep in eposes)
+      foreach (var t_ep in eposes)
       {
+        var t = t_ep.Key;
+        var ep = t_ep.Value;
+
         poses.Add(new HumanPose
         {
           bodyPosition = new Vector3(ep.px, ep.py, ep.pz),
@@ -43,7 +43,6 @@ public class HumanPosePlayback : MonoBehaviour {
         });
 
         timestamps.Add(t);
-        t = t + dt;
       }
     }
 
