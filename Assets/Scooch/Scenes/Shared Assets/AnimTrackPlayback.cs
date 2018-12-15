@@ -65,7 +65,7 @@ namespace StageDive
       if (m_PoseHandler == null) return;
 
       // Compute the animation time.
-      float runtime = m_AnimTrack.Runtime;
+      float runtime = m_AnimTrack.Duration;
       int n = (int)(Time.time / runtime);
       float time;
       if (useScrub)

@@ -11,7 +11,7 @@ namespace StageDive
   {
     public AnimClip animClip;
 
-    public float Runtime
+    public float ClipDuration
     {
       get
       {
@@ -22,11 +22,45 @@ namespace StageDive
       }
     }
 
+    public float PaddedClipStartTime
+    {
+      get { return m_LeftPadding * ClipDuration; }
+    }
+
+    public float PaddedClipEndTime
+    {
+      get { return (1.0f - m_RightPadding) * ClipDuration; }
+    }
+
+    public float Duration
+    {
+      get { return (1.0f - m_LeftPadding - m_RightPadding) * ClipDuration; }
+    }
+
+    [SerializeField]
+    [Range(0, 1)]
+    private float m_LeftPadding = 0.0f; // normalized
+
+    [SerializeField]
+    [Range(0, 1)]
+    private float m_RightPadding = 0.0f; // normalized
+
+    private void OnValidate()
+    {
+      // Ensure padding doesn't exceed 100% of our animation clip.
+      m_LeftPadding = Mathf.Clamp01(m_LeftPadding);
+      m_RightPadding = Mathf.Clamp01(m_RightPadding);
+      if (m_LeftPadding + m_RightPadding > 1.0f)
+        m_RightPadding = 1.0f - m_LeftPadding;
+    }
+
     public UnityEngine.HumanPose GetPose(float time)
     {
       // Given a non-normalized time, returns a pose from the given clip...
-      float clampTime = Mathf.Clamp(time, 0, Runtime); // in [0, RunTime]
-      float searchTime = clampTime + animClip.frames[0].time; // ready to iterate through AnimClip
+      float clampTime = Mathf.Clamp(time, 0, Duration); // in [0, Duration]
+      float paddedTime = PaddedClipStartTime + clampTime; // seconds from start of clip
+      float searchTime = paddedTime + animClip.frames[0].time; // ready to iterate through AnimClip
+      // NOTE: animClip.frames[0].time is usually zero i.e. paddedTime == searchTime
 
       // Search for bounding frames
       int i = 0, j = 1;
@@ -41,7 +75,7 @@ namespace StageDive
       HumanPose b = fA.pose;
 
       // Interpolation factor
-      float t = clampTime / Runtime;
+      float t = clampTime / ClipDuration;
 
       // Interpolate frames
       float[] muscles = new float[a.muscles.Length];
