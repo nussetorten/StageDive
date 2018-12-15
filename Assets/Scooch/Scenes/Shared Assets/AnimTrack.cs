@@ -52,6 +52,8 @@ namespace StageDive
       m_RightPadding = Mathf.Clamp01(m_RightPadding);
       if (m_LeftPadding + m_RightPadding > 1.0f)
         m_RightPadding = 1.0f - m_LeftPadding;
+
+      // Re-compute t0 position and rotation so all generated poses
     }
 
     public UnityEngine.HumanPose GetPose(float time)
@@ -63,6 +65,7 @@ namespace StageDive
       // NOTE: animClip.frames[0].time is usually zero i.e. paddedTime == searchTime
 
       // Search for bounding frames
+      // NOTE: binary search would be better ...
       int i = 0, j = 1;
       for (; animClip.frames[j].time < searchTime; i = ++j - 1) { }
 
@@ -75,9 +78,10 @@ namespace StageDive
       HumanPose b = fA.pose;
 
       // Interpolation factor
-      float t = clampTime / ClipDuration;
-
-      // Interpolate frames
+      float diff = fB.time - fA.time;
+      float t = (diff > 0) ? (searchTime - fA.time) / diff : 0.0f; // guard against DIV/0
+      
+      // Interpolate muscles
       float[] muscles = new float[a.muscles.Length];
       for (int k = 0; k < a.muscles.Length; k++)
       {
