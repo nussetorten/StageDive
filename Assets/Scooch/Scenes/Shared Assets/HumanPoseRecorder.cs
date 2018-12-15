@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -8,6 +9,8 @@ public class HumanPoseRecorder : MonoBehaviour {
 
   public Animator target;
   public Transform root;
+  [SerializeField]
+  private StageDive.AnimClipDatabase m_AnimClipDatabase;
 
   private HumanPoseHandler m_SourcePoseHandler;
   private bool m_Recording = false;
@@ -58,58 +61,33 @@ public class HumanPoseRecorder : MonoBehaviour {
       yield return new WaitForEndOfFrame();
     }
 
-    Debug.Log("Stopped recording, writing to file ...");
-    var eposes = new Dictionary<float, ElementaryHumanPose>();
+    Debug.Log("Stopped recording, adding to database ...");
+
+    // Build an animation clip from our time/pose pairs
+    StageDive.AnimClip clip = new StageDive.AnimClip();
     foreach (var time_pose in poses)
     {
       var time = time_pose.Key;
       var pose = time_pose.Value;
-      eposes.Add(time, new ElementaryHumanPose
+      clip.frames.Add(new StageDive.AnimFrame
       {
-        px = pose.bodyPosition.x,
-        py = pose.bodyPosition.y,
-        pz = pose.bodyPosition.z,
-        rx = pose.bodyRotation.x,
-        ry = pose.bodyRotation.y,
-        rz = pose.bodyRotation.z,
-        rw = pose.bodyRotation.w,
-        muscles = pose.muscles        
+        time = time,
+        pose = new StageDive.HumanPose
+        {
+          px = pose.bodyPosition.x,
+          py = pose.bodyPosition.y,
+          pz = pose.bodyPosition.z,
+          rx = pose.bodyRotation.x,
+          ry = pose.bodyRotation.y,
+          rz = pose.bodyRotation.z,
+          rw = pose.bodyRotation.w,
+          muscles = pose.muscles        
+        }
       });
     }
-    using (var file = new StreamWriter(System.IO.Path.Combine(Application.dataPath, "recording.hpl")))
-    {
-      file.WriteLine(JsonConvert.SerializeObject(eposes));
-    }
 
-    //using (var file = new StreamWriter(System.IO.Path.Combine(Application.dataPath, "recording.hpl")))
-    //{
-    //  foreach (var pose in poses)
-    //  {
-    //    file.WriteLine(string.Format("P {0:0.000} {1:0.000} {2:0.000}",
-    //      pose.bodyPosition.x,
-    //      pose.bodyPosition.y,
-    //      pose.bodyPosition.z
-    //    ));
-    //    file.WriteLine(string.Format("R {0:0.000} {1:0.000} {2:0.000} {3:0.000}",
-    //      pose.bodyRotation.x,
-    //      pose.bodyRotation.y,
-    //      pose.bodyRotation.z,
-    //      pose.bodyRotation.w
-    //    ));
-    //    file.Write("M");
-    //    for (int i = 0; i < pose.muscles.Length; ++i)
-    //    {
-    //      file.Write(string.Format(" {0:0.0000}", pose.muscles[i]));
-    //    }
-    //    file.WriteLine();
-    //  }
-    //}
+    // Store in database
+    var name = DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH'h'mm'm'ss's'");
+    m_AnimClipDatabase.AddAnimClip(name, clip);
   }
-}
-
-struct ElementaryHumanPose
-{
-  public float px, py, pz;
-  public float rx, ry, rz, rw;
-  public float[] muscles;
 }

@@ -18,6 +18,8 @@ public class HumanPosePlayback : MonoBehaviour {
   [Range(0, 1)]
   public float scrub = -1f;
 
+  [SerializeField]
+  private StageDive.AnimClipDatabase m_AnimClipDatabase;
   private HumanPoseHandler m_PoseHandler;
 
   private LineRenderer lineRenderer { get { return GetComponent<LineRenderer>(); } }
@@ -26,24 +28,20 @@ public class HumanPosePlayback : MonoBehaviour {
   {
     m_PoseHandler = new HumanPoseHandler(avatar, target);
 
-    using (var file = new System.IO.StreamReader(System.IO.Path.Combine(Application.dataPath, "recording.hpl")))
+    // DEBUG load first clip.
+    var clip = m_AnimClipDatabase.GetAnimClipAt(0);
+    foreach (var frame in clip.frames)
     {
-      var eposes = JsonConvert.DeserializeObject<Dictionary<float, ElementaryHumanPose>>(file.ReadToEnd());
-
-      foreach (var t_ep in eposes)
+      var t = frame.time;
+      var p = frame.pose;
+      poses.Add(new HumanPose
       {
-        var t = t_ep.Key;
-        var ep = t_ep.Value;
+        bodyPosition = new Vector3(p.px, p.py, p.pz),
+        bodyRotation = new Quaternion(p.rx, p.ry, p.rz, p.rw),
+        muscles = (float[])p.muscles.Clone()
+      });
 
-        poses.Add(new HumanPose
-        {
-          bodyPosition = new Vector3(ep.px, ep.py, ep.pz),
-          bodyRotation = new Quaternion(ep.rx, ep.ry, ep.rz, ep.rw),
-          muscles = (float[])ep.muscles.Clone()
-        });
-
-        timestamps.Add(t);
-      }
+      timestamps.Add(t);
     }
 
     linepos = new Vector3[poses.Count];
@@ -51,7 +49,6 @@ public class HumanPosePlayback : MonoBehaviour {
 
     for (int i = 0; i < poses.Count; i++)
     {
-      Debug.Log(1.0f * i  / (poses.Count - 1));
       linepos[i] = poses[i].bodyPosition;
       linetex.SetPixel(i, 0, Color.green);
     }
