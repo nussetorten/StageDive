@@ -45,6 +45,9 @@ namespace StageDive
     [Range(0, 1)]
     private float m_RightPadding = 0.0f; // normalized
 
+    [SerializeField]
+    private Matrix4x4 m_P0Inv = Matrix4x4.identity;
+
     private void OnValidate()
     {
       // Ensure padding doesn't exceed 100% of our animation clip.
@@ -53,10 +56,33 @@ namespace StageDive
       if (m_LeftPadding + m_RightPadding > 1.0f)
         m_RightPadding = 1.0f - m_LeftPadding;
 
-      // Re-compute t0 position and rotation so all generated poses
+      // Re-compute position @ t0 so all generated poses are relative
+      // to the start of the clip.
+      if (animClip != null)
+      {
+        ComputeP0Inv();
+      }
     }
 
-    public UnityEngine.HumanPose GetPose(float time)
+    private void Start()
+    {
+      ComputeP0Inv();
+    }
+
+    private void ComputeP0Inv()
+    {
+      // Search for HumanPose corresponding to padded start of clip
+      var hp = GetPoseInClipSpace(0);
+      // Isolate xz-plane translation and y-axis rotation
+      var t = new Vector3(hp.bodyPosition.x, 0, hp.bodyPosition.z); // translation
+      var r = Quaternion.Euler(new Vector3(0, hp.bodyRotation.eulerAngles.y, 0)); // rotation
+      var s = Vector3.one; // scale
+      // Compute inverse transformation
+      var P0 = Matrix4x4.TRS(t, r, s);
+      m_P0Inv = P0.inverse;
+    }
+
+    private UnityEngine.HumanPose GetPoseInClipSpace(float time)
     {
       // Given a non-normalized time, returns a pose from the given clip...
       float clampTime = Mathf.Clamp(time, 0, Duration); // in [0, Duration]
@@ -98,16 +124,35 @@ namespace StageDive
       Quaternion rB = new Quaternion(b.rx, b.ry, b.rz, b.rw);
       Quaternion rC = Quaternion.Lerp(rA, rB, t);
 
+      // Return human pose
+      return new UnityEngine.HumanPose()
+      {
+        bodyPosition = pC,
+        bodyRotation = rC,
+        muscles = muscles
+      };
+    }
+
+    public UnityEngine.HumanPose GetPose(float time)
+    {
+      // Retrieve the corresponding HumanPose, with position and rotation
+      // in AnimClip space.
+      var hp = GetPoseInClipSpace(time);
+
+      // Apply relative-to-p0 transform
+      var pD = m_P0Inv.MultiplyPoint3x4(hp.bodyPosition);
+      var rD = m_P0Inv.rotation * hp.bodyRotation;
+
       // Apply local-to-world transform
-      var p = transform.rotation * pC + transform.position;
-      var r = transform.rotation * rC;
+      var pE = transform.rotation * pD + transform.position;
+      var rE = transform.rotation * rD;
 
       // Return human pose
       return new UnityEngine.HumanPose()
       {
-        bodyPosition = p,
-        bodyRotation = r,
-        muscles = muscles
+        bodyPosition = pE,
+        bodyRotation = rE,
+        muscles = hp.muscles
       };
     }
   }
