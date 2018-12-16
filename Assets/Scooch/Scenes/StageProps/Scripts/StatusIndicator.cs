@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Status indicator is a toy, meant to resemble a visual "widget" similar
+/// to the circle of LEDs found on OptiTrack cameras.
+/// 
+/// Rather than track a target, this widget winds and unwinds a colorful bead
+/// in a ring on the xy-plane in a playful manner.
+/// </summary>
 public class StatusIndicator : MonoBehaviour
 {
   private LineRenderer m_HaloRenderer = null;
@@ -21,7 +28,7 @@ public class StatusIndicator : MonoBehaviour
     if (m_HaloRenderer == null)
     {
       // Construct a parameterized circle in the xy-plane
-      const int n = 18;
+      const int n = 18; // overkill
       Vector3[] verts = new Vector3[n];
       for (int i = 0; i < n; i++)
       {
@@ -55,11 +62,13 @@ public class StatusIndicator : MonoBehaviour
       m_DotRenderer.material = m_Material;
     }
 
+    // Kick off animation
     StartCoroutine(AnimNoisyStatusIndicator());
   }
 
   private void Update()
   {
+    // Apply parameterized time to colored dot.
     var u = 2.0f * Mathf.PI * t;
     var p = new Vector3(Mathf.Sin(u), Mathf.Cos(u), 0.0f);
     m_DotRenderer.transform.localPosition = p;
@@ -87,11 +96,11 @@ public class StatusIndicator : MonoBehaviour
           yield return new WaitForEndOfFrame();
         }
       }
-      // Set to ready color
+      // Set to reset color
       m_DotRenderer.material.color = resetColor;
       m_HaloRenderer.material.color = resetColor;
       {
-        //  Ease linearly back to zero position
+        //  Ease linearly back to zero position (over 3 sec).
         var dur = 3.0f;
         var src = 1.0f;
         var dst = 0.0f;
@@ -109,9 +118,9 @@ public class StatusIndicator : MonoBehaviour
   }
 }
  
+// Ack. Robert Penner and http://www.gizma.com/easing/
 public static class Easing
 {
-
   public static float ExpoOut(float t, float b, float e, float d)
   {
     t = Mathf.Clamp(t, 0, d);
