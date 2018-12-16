@@ -7,11 +7,11 @@ namespace StageDive
   /// <summary>
   /// Provides playback access to an AnimClip.
   /// </summary>
-  public class AnimTrack : MonoBehaviour
+  public class AnimTrack : AnimTrackBase
   {
     public AnimClip animClip;
 
-    public float ClipDuration
+    public override float UnpaddedDuration
     {
       get
       {
@@ -22,40 +22,14 @@ namespace StageDive
       }
     }
 
-    public float PaddedClipStartTime
-    {
-      get { return m_LeftPadding * ClipDuration; }
-    }
-
-    public float PaddedClipEndTime
-    {
-      get { return (1.0f - m_RightPadding) * ClipDuration; }
-    }
-
-    public float Duration
-    {
-      get { return (1.0f - m_LeftPadding - m_RightPadding) * ClipDuration; }
-    }
-
     [SerializeField]
-    [Range(0, 1)]
-    private float m_LeftPadding = 0.0f; // normalized
+    protected Matrix4x4 m_P0Inv = Matrix4x4.identity;
 
-    [SerializeField]
-    [Range(0, 1)]
-    private float m_RightPadding = 0.0f; // normalized
-
-    [SerializeField]
-    private Matrix4x4 m_P0Inv = Matrix4x4.identity;
-
-    private void OnValidate()
+    protected override void OnValidate()
     {
-      // Ensure padding doesn't exceed 100% of our animation clip.
-      m_LeftPadding = Mathf.Clamp01(m_LeftPadding);
-      m_RightPadding = Mathf.Clamp01(m_RightPadding);
-      if (m_LeftPadding + m_RightPadding > 1.0f)
-        m_RightPadding = 1.0f - m_LeftPadding;
-
+      // Validates PaddedClip*Time, Duration
+      base.OnValidate();
+      
       // Re-compute position @ t0 so all generated poses are relative
       // to the start of the clip.
       if (animClip != null)
@@ -69,7 +43,7 @@ namespace StageDive
       ComputeP0Inv();
     }
 
-    private void ComputeP0Inv()
+    protected virtual void ComputeP0Inv()
     {
       // Search for HumanPose corresponding to padded start of clip
       var hp = GetPoseInClipSpace(0);
@@ -133,7 +107,7 @@ namespace StageDive
       };
     }
 
-    public UnityEngine.HumanPose GetPose(float time)
+    public override UnityEngine.HumanPose GetPose(float time)
     {
       // Retrieve the corresponding HumanPose, with position and rotation
       // in AnimClip space.

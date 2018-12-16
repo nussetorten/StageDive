@@ -16,7 +16,7 @@ namespace StageDive
 
     public Transform Target { get { return m_Target; } }
     
-    public AnimTrack Track
+    public AnimTrackBase Track
     {
       get { return m_AnimTrack; }
       set { m_AnimTrack = value; }
@@ -27,7 +27,7 @@ namespace StageDive
     [SerializeField]
     private Transform m_Target;
     [SerializeField]
-    private AnimTrack m_AnimTrack;
+    private AnimTrackBase m_AnimTrack;
     private HumanPoseHandler m_PoseHandler;
 
     public void SetAvatarAndTarget(Avatar avatar, Transform target)

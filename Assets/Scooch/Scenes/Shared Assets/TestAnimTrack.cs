@@ -16,12 +16,23 @@ namespace StageDive
       var clip = db.GetAnimClipAt(0);
 
       // Instantiate a track
-      var gobj = new GameObject("track0");
-      var track = gobj.AddComponent<AnimTrack>();
-      track.animClip = clip;
+      var gobj0 = new GameObject("track0");
+      var track0 = gobj0.AddComponent<AnimTrack>();
+      track0.animClip = clip;
+
+      // Instantiate a track
+      var gobj1 = new GameObject("track1");
+      var track1 = gobj1.AddComponent<AnimTrack>();
+      track1.animClip = clip;
+
+      // Instantiate a multitrack
+      var gobj2 = new GameObject("track2");
+      var track2 = gobj2.AddComponent<AnimMultiTrack>();
+      track2.m_SubTracks.Add((AnimTrackBase)track0);
+      track2.m_SubTracks.Add((AnimTrackBase)track1);
 
       // Apply to playback
-      playback.Track = track;
+      playback.Track = (AnimTrackBase)track2;
     }
   }
 
