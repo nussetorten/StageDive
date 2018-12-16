@@ -109,7 +109,7 @@ public class HumanPosePlayback : MonoBehaviour {
       else
       {
         float tt = (err[k] - 0.3f) / 0.5f;  // may be >1 
-        linetex.SetPixel(k, 0, Color.Lerp(Color.yellow, Color.red, err[k]));
+        linetex.SetPixel(k, 0, Color.Lerp(Color.yellow, Color.red, tt));//err[k]));
       }
     }
     linetex.Apply();
