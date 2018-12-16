@@ -6,6 +6,8 @@ namespace StageDive
 {
   public abstract class AnimTrackBase : MonoBehaviour
   {
+    public event System.EventHandler PropertiesChanged;
+
     public abstract float UnpaddedDuration { get; }
 
     public float PaddedClipStartTime
@@ -40,6 +42,12 @@ namespace StageDive
       m_RightPadding = Mathf.Clamp01(m_RightPadding);
       if (m_LeftPadding + m_RightPadding > 1.0f)
         m_RightPadding = 1.0f - m_LeftPadding;
+
+      // Notify downstream
+      if (PropertiesChanged != null)
+      {
+        PropertiesChanged(this, null);
+      }
     }
 
     protected virtual void Start()

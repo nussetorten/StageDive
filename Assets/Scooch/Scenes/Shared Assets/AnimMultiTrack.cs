@@ -6,7 +6,13 @@ namespace StageDive
 {
   public class AnimMultiTrack : AnimTrackBase
   {
-    public List<AnimTrackBase> m_SubTracks = new List<AnimTrackBase>();
+    private List<AnimTrackBase> m_SubTracks = new List<AnimTrackBase>();
+
+    public void AddTrack(AnimTrackBase track)
+    {
+      m_SubTracks.Add(track);
+      track.PropertiesChanged += OnSubTrackPropertiesChanged;
+    }
 
     public override float UnpaddedDuration
     {
@@ -73,6 +79,11 @@ namespace StageDive
           track.transform.localRotation = r;
         }
       }
+    }
+
+    private void OnSubTrackPropertiesChanged(object obj, System.EventArgs args)
+    {
+      OnValidate();
     }
 
     private UnityEngine.HumanPose GetPoseInSubTrackSpace(float time)

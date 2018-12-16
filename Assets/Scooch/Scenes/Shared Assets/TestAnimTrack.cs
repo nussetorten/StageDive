@@ -28,8 +28,8 @@ namespace StageDive
       // Instantiate a multitrack
       var gobj2 = new GameObject("track2");
       var track2 = gobj2.AddComponent<AnimMultiTrack>();
-      track2.m_SubTracks.Add((AnimTrackBase)track0);
-      track2.m_SubTracks.Add((AnimTrackBase)track1);
+      track2.AddTrack((AnimTrackBase)track0);
+      track2.AddTrack((AnimTrackBase)track1);
 
       // Apply to playback
       playback.Track = (AnimTrackBase)track2;
