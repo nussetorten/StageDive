@@ -22,6 +22,16 @@ namespace StageDive
       }
     }
 
+    public override UnityEngine.HumanPose StartPose
+    {
+      get { return GetPose(0.0f); }
+    }
+
+    public override UnityEngine.HumanPose EndPose
+    {
+      get { return GetPose(Duration); }
+    }
+
     [SerializeField]
     protected Matrix4x4 m_P0Inv = Matrix4x4.identity;
 
@@ -36,11 +46,6 @@ namespace StageDive
       {
         ComputeP0Inv();
       }
-    }
-
-    private void Start()
-    {
-      ComputeP0Inv();
     }
 
     protected virtual void ComputeP0Inv()
@@ -107,6 +112,18 @@ namespace StageDive
       };
     }
 
+    private void ClipToLocal(ref Vector3 position, ref Quaternion rotation)
+    {
+      position = m_P0Inv.MultiplyPoint3x4(position);
+      rotation = m_P0Inv.rotation * rotation;
+    }
+
+    private void LocalToWorld(ref Vector3 position, ref Quaternion rotation)
+    {
+      position = transform.rotation * position + transform.position;
+      rotation = transform.rotation * rotation;
+    }
+
     public override UnityEngine.HumanPose GetPose(float time)
     {
       // Retrieve the corresponding HumanPose, with position and rotation
@@ -114,20 +131,13 @@ namespace StageDive
       var hp = GetPoseInClipSpace(time);
 
       // Apply relative-to-p0 transform
-      var pD = m_P0Inv.MultiplyPoint3x4(hp.bodyPosition);
-      var rD = m_P0Inv.rotation * hp.bodyRotation;
+      ClipToLocal(ref hp.bodyPosition, ref hp.bodyRotation);
 
       // Apply local-to-world transform
-      var pE = transform.rotation * pD + transform.position;
-      var rE = transform.rotation * rD;
+      LocalToWorld(ref hp.bodyPosition, ref hp.bodyRotation);
 
       // Return human pose
-      return new UnityEngine.HumanPose()
-      {
-        bodyPosition = pE,
-        bodyRotation = rE,
-        muscles = hp.muscles
-      };
+      return hp;
     }
   }
 

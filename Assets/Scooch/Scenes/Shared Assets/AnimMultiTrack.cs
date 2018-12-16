@@ -21,6 +21,54 @@ namespace StageDive
       }
     }
 
+    protected override void OnValidate()
+    {
+      // Validates PaddedClip*Time, Duration
+      base.OnValidate();
+
+      // All sub-tracks should be children of this object
+      for (int i = 0; i < m_SubTracks.Count; i++)
+      {
+        // Parent sub-track
+        var track = m_SubTracks[i];
+        track.transform.parent = this.transform;
+
+        // String end-to-end starting at local zero
+        if (i == 0)
+        {
+          track.transform.localPosition = Vector3.zero;
+          track.transform.localRotation = Quaternion.identity;
+        }
+        else /* i > 0 */
+        {
+          var previousTrack = m_SubTracks[i - 1];
+          var hp = previousTrack.EndPose;
+          // Isolate xz-plane translation and y-axis rotation
+          var t = new Vector3(hp.bodyPosition.x, 0, hp.bodyPosition.z); // translation
+          var r = Quaternion.Euler(new Vector3(0, hp.bodyRotation.eulerAngles.y, 0)); // rotation
+          track.transform.localPosition = t;
+          track.transform.localRotation = r;
+        }
+      }
+    }
+
+    public override UnityEngine.HumanPose StartPose
+    {
+      get
+      {
+        return m_SubTracks[0].StartPose;
+      }
+    }
+
+    public override UnityEngine.HumanPose EndPose
+    {
+      get
+      {
+        int n = m_SubTracks.Count;
+        return m_SubTracks[n - 1].EndPose;
+      }
+    }
+
     public override UnityEngine.HumanPose GetPose(float time)
     {
       // Compute the clapped, padded, search time.

@@ -23,6 +23,10 @@ namespace StageDive
       get { return (1.0f - m_LeftPadding - m_RightPadding) * UnpaddedDuration; }
     }
 
+    public abstract UnityEngine.HumanPose StartPose { get; }
+
+    public abstract UnityEngine.HumanPose EndPose { get; }
+
     protected virtual void OnValidate()
     {
       // Ensure padding doesn't exceed 100% of our animation clip.
@@ -30,6 +34,11 @@ namespace StageDive
       m_RightPadding = Mathf.Clamp01(m_RightPadding);
       if (m_LeftPadding + m_RightPadding > 1.0f)
         m_RightPadding = 1.0f - m_LeftPadding;
+    }
+
+    protected virtual void Start()
+    {
+      OnValidate();
     }
 
     [SerializeField]
