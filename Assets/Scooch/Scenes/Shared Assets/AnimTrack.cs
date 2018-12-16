@@ -22,16 +22,6 @@ namespace StageDive
       }
     }
 
-    public override UnityEngine.HumanPose StartPose
-    {
-      get { return GetPose(0.0f); }
-    }
-
-    public override UnityEngine.HumanPose EndPose
-    {
-      get { return GetPose(Duration); }
-    }
-
     [SerializeField]
     protected Matrix4x4 m_P0Inv = Matrix4x4.identity;
 

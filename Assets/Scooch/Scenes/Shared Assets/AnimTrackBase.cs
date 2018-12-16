@@ -23,9 +23,15 @@ namespace StageDive
       get { return (1.0f - m_LeftPadding - m_RightPadding) * UnpaddedDuration; }
     }
 
-    public abstract UnityEngine.HumanPose StartPose { get; }
+    public UnityEngine.HumanPose StartPose
+    {
+      get { return GetPose(0.0f); }
+    }
 
-    public abstract UnityEngine.HumanPose EndPose { get; }
+    public UnityEngine.HumanPose EndPose
+    {
+      get { return GetPose(Duration); }
+    }
 
     protected virtual void OnValidate()
     {
