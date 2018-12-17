@@ -87,8 +87,7 @@ public class StatusIndicator : MonoBehaviour
         var src = t;
         var dst = Mathf.Min(src + Random.Range(0.1f, 0.5f), 1.0f);
         var now = 0.0f;
-        var dur = Random.Range(1.0f, 4.0f);
-        Debug.Log(dst);
+        var dur = Random.Range(2.0f, 6.0f);
         while (now < dur)
         {
           now = Mathf.Min(now + Time.deltaTime, dur);
@@ -100,8 +99,8 @@ public class StatusIndicator : MonoBehaviour
       m_DotRenderer.material.color = resetColor;
       m_HaloRenderer.material.color = resetColor;
       {
-        //  Ease linearly back to zero position (over 3 sec).
-        var dur = 3.0f;
+        //  Ease linearly back to zero position (over 2 sec).
+        var dur = 2.0f;
         var src = 1.0f;
         var dst = 0.0f;
         var now = 0.0f;
