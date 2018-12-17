@@ -35,7 +35,7 @@ namespace StageDive
       get { return GetPose(Duration); }
     }
 
-    protected virtual void OnValidate()
+    public virtual void OnValidate()
     {
       // Ensure padding doesn't exceed 100% of our animation clip.
       m_LeftPadding = Mathf.Clamp01(m_LeftPadding);

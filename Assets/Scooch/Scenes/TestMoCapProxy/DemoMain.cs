@@ -1,12 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using StageDive;
 
 public class DemoMain : MonoBehaviour
 {
   public GameObject MoCapProxy;
   public MoCapProxyController MoCapProxyController;
   public FadeController MoCapProxyFade;
+  public Renderer MoCapProxyRenderer;
+  public HumanPoseRecorder MoCapRecorder;
+  public AnimMultiTrack MoCapPlaybackTrack;
+  public AnimClipDatabase MoCapDatabase;
+  public AnimTrackPlayback MoCapPlayback;
+  public GameObject MoCapPlaybackAvatar;
+  public GameObject MoCapPlaybackGui;
   public FadeController CageFade;
   public Transform Cage;
   public StageLightingManager LightingManager;
@@ -14,6 +22,7 @@ public class DemoMain : MonoBehaviour
   public MouseOrbitImproved CameraController;
   public Transform CameraTargetProxy;
   public Transform CameraTargetCenter;
+  public Transform CameraTargetPlayback;
 
   public void Update()
   {
@@ -65,9 +74,54 @@ public class DemoMain : MonoBehaviour
         {
           CameraController.target = CameraTargetProxy;
         }
+        else if (CameraController.target == CameraTargetProxy)
+        {
+          CameraController.target = CameraTargetPlayback;
+        }
         else
         {
           CameraController.target = CameraTargetCenter;
+        }
+      }
+
+      // Recording
+      if (Input.GetKeyDown(KeyCode.R))
+      {
+        if (MoCapProxyRenderer.material.color == Color.white)
+        {
+          // Start recording
+          MoCapProxyRenderer.material.color = Color.red; // highlight body red
+          MoCapRecorder.StartRecording();
+        }
+        else
+        {
+          // Stop recording
+          StartCoroutine(Action_StopRecording());
+        }
+      }
+      if (Input.GetKeyDown(KeyCode.T))
+      {
+        StartCoroutine(Action_StopRecording());
+      }
+      if (Input.GetKeyDown(KeyCode.V))
+      {
+        MoCapPlaybackTrack.OnValidate();
+      }
+
+      // Playback
+      if (Input.GetKeyDown(KeyCode.P))
+      {
+        if (MoCapPlaybackAvatar.activeSelf)
+        {
+          // Deactivate
+          MoCapPlaybackAvatar.SetActive(false);
+          MoCapPlaybackGui.SetActive(false);
+        }
+        else
+        {
+          // Activate
+          MoCapPlaybackAvatar.SetActive(true);
+          MoCapPlaybackGui.SetActive(true);
         }
       }
 
@@ -160,4 +214,22 @@ public class DemoMain : MonoBehaviour
     yield return StartCoroutine(MoCapProxyFade.FadeInRoutine(1.0f));
   }
 
+  private IEnumerator Action_StopRecording()
+  {
+    MoCapProxyRenderer.material.color = Color.white; // remove highlight
+    MoCapRecorder.StopRecording();
+
+    // Stop is asynchronous; wait a few frames.
+    yield return new WaitForSeconds(0.5f);
+    
+    // Instantiate playback track.
+    var n = MoCapDatabase.AnimClipNames.Length;
+    var name = MoCapDatabase.AnimClipNames[n - 1];
+    var gobj = new GameObject("track_" + name);
+    var track = gobj.AddComponent<AnimTrack>();
+    track.animClip = MoCapDatabase.GetAnimClip(name);
+
+    // Register with multi-track.
+    MoCapPlaybackTrack.AddTrack(track);
+  }
 }

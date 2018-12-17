@@ -12,6 +12,7 @@ namespace StageDive
     {
       m_SubTracks.Add(track);
       track.PropertiesChanged += OnSubTrackPropertiesChanged;
+      track.OnValidate();
     }
 
     public override float UnpaddedDuration
@@ -30,10 +31,14 @@ namespace StageDive
     [SerializeField]
     protected Matrix4x4 m_P0Inv = Matrix4x4.identity;
 
+    //private Vector3 m_P0P = Vector3.zero;
+    //private Quaternion m_P0R = Quaternion.identity;
+
     protected virtual void ComputeP0Inv()
     {
       // Search for HumanPose corresponding to padded start of clip
       var hp = GetPoseInSubTrackSpace(0);
+
       // Isolate xz-plane translation and y-axis rotation
       var t = new Vector3(hp.bodyPosition.x, 0, hp.bodyPosition.z); // translation
       var r = Quaternion.Euler(new Vector3(0, hp.bodyRotation.eulerAngles.y, 0)); // rotation
@@ -41,9 +46,12 @@ namespace StageDive
       // Compute inverse transformation
       var P0 = Matrix4x4.TRS(t, r, s);
       m_P0Inv = P0.inverse;
+
+      //m_P0P = new Vector3(hp.bodyPosition.x, 0, hp.bodyPosition.z);
+      //m_P0R = Quaternion.Euler(new Vector3(0, hp.bodyRotation.eulerAngles.y, 0));
     }
 
-    protected override void OnValidate()
+    public override void OnValidate()
     {
       // Validates PaddedClip*Time, Duration
       base.OnValidate();
@@ -109,14 +117,16 @@ namespace StageDive
 
     private void ClipToLocal(ref Vector3 position, ref Quaternion rotation)
     {
+      //position = position - m_P0P;
+      //rotation = Quaternion.Inverse(m_P0R) * rotation;
       position = m_P0Inv.MultiplyPoint3x4(position);
       rotation = m_P0Inv.rotation * rotation;
     }
 
     private void LocalToWorld(ref Vector3 position, ref Quaternion rotation)
     {
-      position = transform.rotation * position + transform.position;
-      rotation = transform.rotation * rotation;
+      position = transform.localRotation * position + transform.localPosition;
+      rotation = transform.localRotation * rotation;
     }
 
     public override UnityEngine.HumanPose GetPose(float time)

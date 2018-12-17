@@ -12,6 +12,10 @@ namespace StageDive
     [Range(0, 1)]
     public float scrub = 0f;
 
+    public float Scrub { get { return scrub; } set { scrub = value; } }
+
+    public bool UseScrub { get { return useScrub; } set { useScrub = value; } }
+
     public Avatar Avatar { get { return m_Avatar; } }
 
     public Transform Target { get { return m_Target; } }
