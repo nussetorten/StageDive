@@ -11,4 +11,29 @@ public class MoCapProxyController : MonoBehaviour
   {
     Animator = GetComponent<Animator>();
   }
+
+  [ContextMenu("Idle")]
+  public void PlayIdle()
+  {
+    Animator.Play("Idle");
+  }
+
+  [ContextMenu("Ready")]
+  public void PlayReady()
+  {
+    Animator.Play("Ready");
+  }
+
+  [ContextMenu("Fuss with campfire")]
+  public void PlayFussWithCampfire()
+  {
+    Animator.Play("FussWithCampfire");
+  }
+
+  [ContextMenu("Walk across")]
+  public void PlayWalkAcross()
+  {
+    Animator.Play("WalkAcross");
+  }
+
 }

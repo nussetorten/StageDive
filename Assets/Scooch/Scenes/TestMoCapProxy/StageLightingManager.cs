@@ -94,7 +94,7 @@ public class StageLightingManager : MonoBehaviour
     StartCoroutine(EaseBetweenLightingProfiles(CurrentProfile, name, t));
   }
 
-  private IEnumerator EaseBetweenLightingProfiles(ProfileName a, ProfileName b, float t)
+  public IEnumerator EaseBetweenLightingProfiles(ProfileName a, ProfileName b, float t)
   {
     // Retrieve lighting profiles
     var src = m_LightingProfiles[a];
