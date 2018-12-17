@@ -7,6 +7,8 @@ public class DemoMain : MonoBehaviour
   public GameObject MoCapProxy;
   public MoCapProxyController MoCapProxyController;
   public FadeController MoCapProxyFade;
+  public FadeController CageFade;
+  public Transform Cage;
   public StageLightingManager LightingManager;
 
   public MouseOrbitImproved CameraController;
@@ -36,7 +38,7 @@ public class DemoMain : MonoBehaviour
     }
     else
     {
-      // Lighting
+      // Stage and lighting
       if (Input.GetKeyDown(KeyCode.PageDown))
       {
         StartCoroutine(LightingManager.EaseBetweenLightingProfiles(
@@ -44,6 +46,7 @@ public class DemoMain : MonoBehaviour
           StageLightingManager.ProfileName.CloseQuarters,
           3.0f
         ));
+        StartCoroutine(CageFade.FadeInRoutine(2.0f));
       }
       if (Input.GetKeyDown(KeyCode.PageUp))
       {
@@ -52,6 +55,7 @@ public class DemoMain : MonoBehaviour
           StageLightingManager.ProfileName.OpenSpaces,
           3.0f
         ));
+        StartCoroutine(CageFade.FadeOutRoutine(2.0f));
       }
 
       // Camera
