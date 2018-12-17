@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(Renderer))]
 public class DynamicMaterialTileCylinder : MonoBehaviour
 {
@@ -9,13 +10,11 @@ public class DynamicMaterialTileCylinder : MonoBehaviour
 
   private Renderer Renderer { get; set; }
 
-  [ExecuteInEditMode]
   private void Awake()
   {
     Renderer = GetComponent<Renderer>(); 
   }
 
-  [ExecuteInEditMode]
   private void Update()
   {
     // Assume we are a UnityEngine primitive cylinder, i.e. at scale=<1,1,1>
@@ -33,6 +32,6 @@ public class DynamicMaterialTileCylinder : MonoBehaviour
     float y = Mathf.Max(1.0f, Mathf.Round(h / scale));
 
     // Apply to renderer material
-    Renderer.material.mainTextureScale = new Vector2(x, y);
+    Renderer.sharedMaterial.mainTextureScale = new Vector2(x, y);
   }
 }
